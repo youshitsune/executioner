@@ -6,13 +6,20 @@
         <link rel="stylesheet" href="/static/css/style.css" />
     </head>
     <body>
-        <form id='form' hx-encoding='multipart/form-data' hx-post='/upload' hx-swap="none">
+        <form id='form' hx-encoding='multipart/form-data' hx-post='/upload' hx-swap="innerHTML" hx-target="#output">
             <input type='file' name='files' multiple>
+            <input type="text" name="cmd">
             <button>
                 Upload
             </button>
         </form>
+        <div id="output">
+        </div>
     </body>
     <script src="/static/js/htmx.js"></script>
 </html>
+{{ end }}
+
+{{ define "output" }}
+<textarea disabled>{{.Text}}</textarea> 
 {{ end }}

@@ -5,6 +5,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
+	"strings"
 	"text/template"
 
 	"math/rand"
@@ -34,7 +36,7 @@ func newTemplateRenderer(e *echo.Echo, paths ...string) {
 	e.Renderer = t
 }
 
-func nameDir() string {
+func newDir() string {
 	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
 	s := make([]rune, 10)
@@ -44,10 +46,15 @@ func nameDir() string {
 	return string(s) + "/"
 }
 
-func execute(dir string) {
-	fmt.Println("Executing...")
+func execute(dir string, cmd string) ([]byte, error) {
+	os.Chdir(dir)
+	res, err := exec.Command(strings.Split(cmd, " ")[0], strings.Split(cmd, " ")[1:]...).Output()
+	if err != nil {
+		return []byte{}, err
+	}
+	os.Chdir("..")
 	os.RemoveAll(dir)
-	fmt.Println("Execution finished")
+	return res, nil
 }
 
 func main() {
@@ -60,7 +67,7 @@ func main() {
 	e.POST("/upload", func(c echo.Context) error {
 		req, _ := c.MultipartForm()
 		files := req.File["files"]
-		path := nameDir()
+		path := newDir()
 		os.Mkdir(path, 0755)
 		for _, file := range files {
 			src, err := file.Open()
@@ -79,8 +86,12 @@ func main() {
 			}
 
 		}
-		execute(path)
-		return c.NoContent(http.StatusOK)
+		cmd := c.FormValue("cmd")
+		res, err := execute(path, cmd)
+		if err != nil {
+			return err
+		}
+		return c.Render(http.StatusOK, "output", map[string]interface{}{"Text": fmt.Sprintf("%s", res)})
 	})
 	e.Logger.Fatal(e.Start(":8080"))
 }
