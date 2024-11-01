@@ -1,0 +1,18 @@
+{{ define "index" }}
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+        <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1"><title>Youshitsune</title>
+        <link rel="stylesheet" href="/static/css/style.css" />
+    </head>
+    <body>
+        <form id='form' hx-encoding='multipart/form-data' hx-post='/upload' hx-swap="none">
+            <input type='file' name='files' multiple>
+            <button>
+                Upload
+            </button>
+        </form>
+    </body>
+    <script src="/static/js/htmx.js"></script>
+</html>
+{{ end }}
